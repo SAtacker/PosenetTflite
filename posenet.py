@@ -106,94 +106,56 @@ for joint_id in parentChildrenTuples:
 # ddVectors(a, b)
 # clampVector(a, min, max)
 ################### For single pose ###################################
-def get_heatmap_scores(heatmaps_result):
-    height, width, depth = heatmaps_result.shape
-    reshaped_heatmap = np.reshape(heatmaps_result, [height * width, depth])
-    coords = np.argmax(reshaped_heatmap, axis=0)
-    y_coords = coords // width
-    x_coords = coords % width
-    return np.concatenate([np.expand_dims(y_coords, 1), np.expand_dims(x_coords, 1)], axis=1)
+# def get_heatmap_scores(heatmaps_result):
+    
+#     return keypoint x and y co-ordinates score np array
 
-def get_points_confidence(heatmaps, coords):
-    result = []
-    for keypoint in range(len(partNames)):
-        # Get max value of heatmap for each keypoint
-        result.append(heatmaps[coords[keypoint, 0],coords[keypoint, 1], keypoint])
-    return result
+# def get_points_confidence(heatmaps, coords):
+#     result = []
 
-def get_offset_vectors(coords, offsets_result):
-    result = []
-    for keypoint in range(len(partNames)):
-        heatmap_y = coords[keypoint, 0]
-        heatmap_x = coords[keypoint, 1]
+#     return result
 
-        offset_y = offsets_result[heatmap_y, heatmap_x, keypoint]
-        offset_x = offsets_result[heatmap_y, heatmap_x, keypoint + len(partNames)]
+# def get_offset_vectors(coords, offsets_result):
+#     result = []
+    
+#     return result
 
-        result.append([offset_y, offset_x])
-    return result
+# def get_offset_points(coords, offsets_result, output_stride=output_stride):
+#     offset_vectors = get_offset_vectors(coords, offsets_result)
+#     scaled_heatmap = coords * output_stride
+#     return scaled_heatmap + offset_vectors
 
-def get_offset_points(coords, offsets_result, output_stride=output_stride):
-    offset_vectors = get_offset_vectors(coords, offsets_result)
-    scaled_heatmap = coords * output_stride
-    return scaled_heatmap + offset_vectors
+# def decode_single_pose(heatmaps, offsets, output_stride=output_stride, width_factor=cam_width/257, height_factor=cam_height/257):
+#     poses = []
 
-def decode_single_pose(heatmaps, offsets, output_stride=output_stride, width_factor=cam_width/257, height_factor=cam_height/257):
-    poses = []
+#     heatmaps_coords = get_heatmap_scores(heatmaps)
+#     offset_points = get_offset_points(heatmaps_coords, offsets, output_stride)
+#     keypoint_confidence = get_points_confidence(heatmaps, heatmaps_coords)
 
-    heatmaps_coords = get_heatmap_scores(heatmaps)
-    offset_points = get_offset_points(heatmaps_coords, offsets, output_stride)
-    keypoint_confidence = get_points_confidence(heatmaps, heatmaps_coords)
+#     keypoints = [{
+#         "position": {
+#             "y": offset_points[keypoint, 0]*height_factor,
+#             "x": offset_points[keypoint, 1]*width_factor
+#         },
+#         "part": partNames[keypoint],
+#         "score": score
+#     } for keypoint, score in enumerate(keypoint_confidence)]
 
-    keypoints = [{
-        "position": {
-            "y": offset_points[keypoint, 0]*height_factor,
-            "x": offset_points[keypoint, 1]*width_factor
-        },
-        "part": partNames[keypoint],
-        "score": score
-    } for keypoint, score in enumerate(keypoint_confidence)]
+#     poses.append({"keypoints": keypoints, \
+#                   "score": (sum(keypoint_confidence) / len(keypoint_confidence))})
+#     return poses
 
-    poses.append({"keypoints": keypoints, \
-                  "score": (sum(keypoint_confidence) / len(keypoint_confidence))})
-    return poses
+# confidence_threshold = 0.1
+# def drawKeypoints(body, img, color):
+#     for keypoint in body['keypoints']:
+#         if keypoint['score'] >= confidence_threshold:
+            
+#     return None
 
-confidence_threshold = 0.1
-def drawKeypoints(body, img, color):
-    for keypoint in body['keypoints']:
-        if keypoint['score'] >= confidence_threshold:
-            center = (int(keypoint['position']['x']), int(keypoint['position']['y']))
-            radius = 3
-            color = color
-            cv2.circle(img, center, radius, color, -1, 8)
-    return None
-
-HeaderPart = {'nose', 'leftEye', 'leftEar', 'rightEye', 'rightEar'}
-def drawSkeleton(body, img):
-    valid_name = set()
-    keypoints = body['keypoints']
-    thickness = 2
-    for idx in range(len(keypoints)):
-        src_point = keypoints[idx]
-        if src_point['part'] in HeaderPart or src_point['score'] < confidence_threshold:
-            continue
-        for dst_point in keypoints[idx:]:
-            if dst_point['part'] in HeaderPart or dst_point['score'] < confidence_threshold:
-                continue
-            name = src_point['part'] + dst_point['part']
-            def check_and_drawline(name):
-                if name not in valid_name and name in ConnectedKeyPointsNames:
-                    color = (255,255,0)#ConnectedKeyPointsNames[name]
-                    cv2.line(img,
-                             (int(src_point['position']['x']), int(src_point['position']['y'])),
-                             (int(dst_point['position']['x']), int(dst_point['position']['y'])),
-                             color, thickness)
-                    valid_name.add(name)
-            name = src_point['part'] + dst_point['part']
-            check_and_drawline(name)
-            name = dst_point['part'] + src_point['part']
-            check_and_drawline(name)
-    return None
+# HeaderPart = {'nose', 'leftEye', 'leftEar', 'rightEye', 'rightEar'}
+# def drawSkeleton(body, img):
+    
+#     return None
 
 color_table = [(0,255,0), (255,0,0), (0,0,255), (255, 255, 0), (0, 255, 255), (255, 0, 255)]
 
