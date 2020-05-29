@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 cam_width = 1280
 cam_height = 720
 cam_id = 0
-output_stride = 16
+output_stride = 32
 ############### This will be done at last ######################
 parser = argparse.ArgumentParser()
 args = parser.parse_args()
