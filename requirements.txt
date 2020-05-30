@@ -22,7 +22,8 @@ Keras-Preprocessing==1.1.0
 kiwisolver==1.2.0
 Markdown==3.1.1
 matplotlib==3.1.3
-mkl-fft==1.0.15
+mkl-fft==1.0.15 
+#ERROR: No matching distribution found for mkl-fft==1.0.15
 mkl-random==1.1.0
 mkl-service==2.3.0
 numpy==1.18.1
