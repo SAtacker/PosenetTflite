@@ -300,6 +300,7 @@ while True:
     fig = plt.figure()
     ax = fig.add_subplot(111,projection='3d')
     ax.plot3D(xline, yline, zline, 'gray')
+    ax.scatter(xline, yline, zline)
     
     plt.show()
     plt.pause(0.01)
