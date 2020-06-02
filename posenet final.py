@@ -1,4 +1,6 @@
 import tensorflow as tf
+import matplotlib as mpl
+from mpl_toolkits.mplot3d import Axes3D
 import cv2
 import argparse
 import time
@@ -168,9 +170,13 @@ def drawKeypoints(body, img, color):
     for keypoint in body['keypoints']:
         if keypoint['score'] >= confidence_threshold:
             center = (int(keypoint['position']['x']), int(keypoint['position']['y']))
-            radius = 3
+            x.append(int(keypoint['position']['x']),
+            y.append(int(keypoint['position']['y'])
+            z.append(int(5))
+            radius = 5
             color = color
             cv2.circle(img, center, radius, color, -1, 8)
+    
     return None
 
 HeaderPart = {'nose', 'leftEye', 'leftEar', 'rightEye', 'rightEar'}
@@ -255,6 +261,48 @@ while True:
     # displacementFwd_result = np.squeeze(displacementFwd_result)
     # displacementBwd_result = np.squeeze(displacementBwd_result)
     poses = decode_single_pose(heatmaps_result, offsets_result)
+    # print(poses)
+    # print(len(poses[0]["keypoints"][0]["position"]))
+    # exit(0)
+    
+    # z=[]
+    # for i in range(17):
+    #     z.append(poses[0]['keypoints'][i]['position']['x'],poses[0]['keypoints'][i]['position']['y'])
+    # print(z)
+    x = []
+    y = []
+
+    for i in range(len(poses[0]['keypoints'])):
+        x.append(poses[0]['keypoints'][i]['position']['x'])
+        y.append(poses[0]['keypoints'][i]['position']['y'])
+    # print(x)
+    # print(y)
+    threed=[]
+    temp = np.array([[589.3667059623796,0.0,320.0],[0.0,589.3667059623796,240.0],[0.0,0.0,1.0]]) 
+    temp2= np.linalg.inv(temp)
+
+    for i in range(len(poses[0]['keypoints'])):
+        z=np.array([x[i],y[i],5])
+        threed.append(np.dot(temp2,z))
+    print(threed)
+    print(len(threed))
+    xline=[]
+    yline=[]
+    zline=[]
+
+    for i in range(len(threed)):
+        xline.append(threed[i][0])
+        yline.append(threed[i][1])
+        zline.append(threed[i][2])
+    print("x:",xline)
+    print("y:",yline)
+    print("z:",zline)
+    fig = plt.figure()
+    ax = fig.add_subplot(111,projection='3d')
+    ax.plot3D(xline, yline, zline, 'gray')
+    
+    plt.show()
+    plt.pause(0.01)
     for i in range(len(poses)):
                     if poses[i]['score'] > 0.1:
                         color = color_table[i]
