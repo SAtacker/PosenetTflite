@@ -170,9 +170,6 @@ def drawKeypoints(body, img, color):
     for keypoint in body['keypoints']:
         if keypoint['score'] >= confidence_threshold:
             center = (int(keypoint['position']['x']), int(keypoint['position']['y']))
-            x.append(int(keypoint['position']['x']),
-            y.append(int(keypoint['position']['y'])
-            z.append(int(5))
             radius = 5
             color = color
             cv2.circle(img, center, radius, color, -1, 8)
@@ -205,7 +202,52 @@ def drawSkeleton(body, img):
             name = dst_point['part'] + src_point['part']
             check_and_drawline(name)
     return None
+def drawmatplotlib(body):
+    valid_name = set()
+    keypoints = body['keypoints']
+    thickness = 2
+    fig = plt.figure()
+    ax = fig.add_subplot(111,projection='3d')
+    for i in range(len(keypoints)):
+        src_point = keypoints[i]
+        if src_point['part'] in HeaderPart: ########or src_point['score'] < confidence_threshold:
+            continue
+        for dst_point in keypoints[i:]:
+            if dst_point['part'] in HeaderPart: #or dst_point['score'] < confidence_threshold:
+                continue
+            name = src_point['part'] + dst_point['part']
+            def check_and_drawline(name):
+                if name not in valid_name and name in ConnectedKeyPointsNames:
+                    x=[int(src_point['position']['x']),int(dst_point['position']['x'])]
+                    y=[int(src_point['position']['y']),int(dst_point['position']['y'])]
+                    temp = np.array([[589.3667059623796,0.0,320.0],[0.0,589.3667059623796,240.0],[0.0,0.0,1.0]]) 
+                    temp2= np.linalg.inv(temp)
+                    threed=[]
+                    for i in range(len(x)):
+                        z=np.array([x[i],y[i],5])
+                        threed.append(np.dot(temp2,z))
+                    xline=[]
+                    yline=[]
+                    zline=[]
 
+                    for i in range(len(threed)):
+                        xline.append(threed[i][0])
+                        yline.append(threed[i][1])
+                        zline.append(threed[i][2])
+                    print("x:",xline)
+                    print("y:",yline)
+                    print("z:",zline)
+                    ax.plot3D(yline, xline, zline, 'gray')
+                    ax.scatter(yline, xline, zline)
+                    valid_name.add(name)
+            name = src_point['part'] + dst_point['part']
+            check_and_drawline(name)
+            name = dst_point['part'] + src_point['part']
+            check_and_drawline(name)
+    plt.show()
+    plt.pause(0.01)
+    plt.close('all')
+    return None
 
 color_table = [(0,255,0), (255,0,0), (0,0,255), (255, 255, 0), (0, 255, 255), (255, 0, 255)]
 
@@ -284,37 +326,42 @@ while True:
     for i in range(len(poses[0]['keypoints'])):
         z=np.array([x[i],y[i],5])
         threed.append(np.dot(temp2,z))
-    print(threed)
-    print(len(threed))
-    xline=[]
-    yline=[]
-    zline=[]
+    # print(threed)
+    # print(len(threed))
+    # xline=[]
+    # yline=[]
+    # zline=[]
 
-    for i in range(len(threed)):
-        xline.append(threed[i][0])
-        yline.append(threed[i][1])
-        zline.append(threed[i][2])
-    print("x:",xline)
-    print("y:",yline)
-    print("z:",zline)
-    fig = plt.figure()
-    ax = fig.add_subplot(111,projection='3d')
-    ax.plot3D(xline, yline, zline, 'gray')
-    ax.scatter(xline, yline, zline)
+    # for i in range(len(threed)):
+    #     xline.append(threed[i][0])
+    #     yline.append(threed[i][1])
+    #     zline.append(threed[i][2])
+    # print("x:",xline)
+    # print("y:",yline)
+    # print("z:",zline)
+    # break
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111,projection='3d')
+    # ax.plot3D(xline, yline, zline, 'gray')
+    # ax.scatter(xline, yline, zline)
     
-    plt.show()
-    plt.pause(0.01)
+    # plt.show()
+    # plt.pause(0.01)
     for i in range(len(poses)):
-                    if poses[i]['score'] > 0.1:
-                        color = color_table[i]
-                        drawKeypoints(poses[i], frame, color)
-                        drawSkeleton(poses[i], frame)
-                    else:
-                        counter += 1
-                        if counter>=5:
-                            cv2.putText(frame,text,nearCenter,font,fontScale,fontColor,lineType)
-                            if counter >=8 :
-                                counter = 0
+        
+        drawmatplotlib(poses[i])
+                    
+
+        if poses[i]['score'] > 0.1:
+            color = color_table[i]
+            drawKeypoints(poses[i], frame, color)
+            drawSkeleton(poses[i],frame)
+        else:
+            counter += 1
+            if counter>=5:
+                cv2.putText(frame,text,nearCenter,font,fontScale,fontColor,lineType)
+                if counter >=8 :
+                    counter = 0
     cv2.imshow("test", frame)
     k = cv2.waitKey(1)
     if k%256 == 27:
