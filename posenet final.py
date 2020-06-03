@@ -303,50 +303,7 @@ while True:
     # displacementFwd_result = np.squeeze(displacementFwd_result)
     # displacementBwd_result = np.squeeze(displacementBwd_result)
     poses = decode_single_pose(heatmaps_result, offsets_result)
-    # print(poses)
-    # print(len(poses[0]["keypoints"][0]["position"]))
-    # exit(0)
     
-    # z=[]
-    # for i in range(17):
-    #     z.append(poses[0]['keypoints'][i]['position']['x'],poses[0]['keypoints'][i]['position']['y'])
-    # print(z)
-    x = []
-    y = []
-
-    for i in range(len(poses[0]['keypoints'])):
-        x.append(poses[0]['keypoints'][i]['position']['x'])
-        y.append(poses[0]['keypoints'][i]['position']['y'])
-    # print(x)
-    # print(y)
-    threed=[]
-    temp = np.array([[589.3667059623796,0.0,320.0],[0.0,589.3667059623796,240.0],[0.0,0.0,1.0]]) 
-    temp2= np.linalg.inv(temp)
-
-    for i in range(len(poses[0]['keypoints'])):
-        z=np.array([x[i],y[i],5])
-        threed.append(np.dot(temp2,z))
-    # print(threed)
-    # print(len(threed))
-    # xline=[]
-    # yline=[]
-    # zline=[]
-
-    # for i in range(len(threed)):
-    #     xline.append(threed[i][0])
-    #     yline.append(threed[i][1])
-    #     zline.append(threed[i][2])
-    # print("x:",xline)
-    # print("y:",yline)
-    # print("z:",zline)
-    # break
-    # fig = plt.figure()
-    # ax = fig.add_subplot(111,projection='3d')
-    # ax.plot3D(xline, yline, zline, 'gray')
-    # ax.scatter(xline, yline, zline)
-    
-    # plt.show()
-    # plt.pause(0.01)
     for i in range(len(poses)):
         
         drawmatplotlib(poses[i])
