@@ -1,4 +1,5 @@
 import tensorflow as tf
+from matplotlib.animation import FuncAnimation
 import matplotlib as mpl
 from mpl_toolkits.mplot3d import Axes3D
 import cv2
@@ -95,19 +96,36 @@ partNames = [
 #     childToParentEdges.append(joint_id[0])
 
 #################################### Defining connected keypoints names ##############################
+# ConnectedKeyPointsNames = {
+#     'leftHipleftShoulder':(0,0,255), 'leftShoulderleftHip':(0,0,255),
+#     'leftElbowleftShoulder':(255,0,0), 'leftShoulderleftElbow':(255,0,0),
+#     'leftElbowleftWrist':(0,255,0), 'leftWristleftElbow':(0,255,0),
+#     'leftHipleftKnee':(0,0,255), 'leftKneeleftHip':(0,0,255),
+#     'leftKneeleftAnkle':(255,255,0), 'leftAnkleleftKnee':(255,255,0),
+#     'rightHiprightShoulder':(0,255,0), 'rightShoulderrightHip':(0,255,0),
+#     'rightElbowrightShoulder':(255,0,0), 'rightShoulderrightElbow':(255,0.0),
+#     'rightElbowrightWrist':(255,255,0), 'rightWristrightElbow':(255,255,0),
+#     'rightHiprightKnee':(255,0,0), 'rightKneerightHip':(255,0,0),
+#     'rightKneerightAnkle':(255,0,0), 'rightAnklerightKnee':(255,0,0),
+#     'leftShoulderrightShoulder':(0,255,0), 'rightShoulderleftShoulder':(0,255,0),
+#     'leftHiprightHip':(0,0,255), 'rightHipleftHip':(0,0,255)
+# }
+
+
+############### ADDING APPROX LENGTHS TO THE BODY's CONNECTED KEYPOINTS ###############################################
 ConnectedKeyPointsNames = {
-    'leftHipleftShoulder':(0,0,255), 'leftShoulderleftHip':(0,0,255),
-    'leftElbowleftShoulder':(255,0,0), 'leftShoulderleftElbow':(255,0,0),
-    'leftElbowleftWrist':(0,255,0), 'leftWristleftElbow':(0,255,0),
-    'leftHipleftKnee':(0,0,255), 'leftKneeleftHip':(0,0,255),
-    'leftKneeleftAnkle':(255,255,0), 'leftAnkleleftKnee':(255,255,0),
-    'rightHiprightShoulder':(0,255,0), 'rightShoulderrightHip':(0,255,0),
-    'rightElbowrightShoulder':(255,0,0), 'rightShoulderrightElbow':(255,0.0),
-    'rightElbowrightWrist':(255,255,0), 'rightWristrightElbow':(255,255,0),
-    'rightHiprightKnee':(255,0,0), 'rightKneerightHip':(255,0,0),
-    'rightKneerightAnkle':(255,0,0), 'rightAnklerightKnee':(255,0,0),
-    'leftShoulderrightShoulder':(0,255,0), 'rightShoulderleftShoulder':(0,255,0),
-    'leftHiprightHip':(0,0,255), 'rightHipleftHip':(0,0,255)
+    'leftHipleftShoulder':120, 'leftShoulderleftHip':120,
+    'leftElbowleftShoulder':75, 'leftShoulderleftElbow':75,
+    'leftElbowleftWrist':70, 'leftWristleftElbow':70,
+    'leftHipleftKnee':85, 'leftKneeleftHip':85,
+    'leftKneeleftAnkle':40, 'leftAnkleleftKnee':40,
+    'rightHiprightShoulder':120, 'rightShoulderrightHip':120,
+    'rightElbowrightShoulder':75, 'rightShoulderrightElbow':75,
+    'rightElbowrightWrist':70, 'rightWristrightElbow':70,
+    'rightHiprightKnee':85, 'rightKneerightHip':85,
+    'rightKneerightAnkle':40, 'rightAnklerightKnee':40,
+    'leftShoulderrightShoulder':100, 'rightShoulderleftShoulder':100,
+    'leftHiprightHip':80, 'rightHipleftHip':80
 }
 
 ######################### Further Algorithm ###########################################
@@ -202,30 +220,41 @@ def drawSkeleton(body, img):
             name = dst_point['part'] + src_point['part']
             check_and_drawline(name)
     return None
-def drawmatplotlib(body):
+###############################   MATPLOTLIB SKELETON   ####################################################################
+src_z=0
+dst_z=0
+def drawmatplotlib(body,fig):
     valid_name = set()
     keypoints = body['keypoints']
-    thickness = 2
-    fig = plt.figure()
+    plt.cla()
     ax = fig.add_subplot(111,projection='3d')
     for i in range(len(keypoints)):
         src_point = keypoints[i]
-        if src_point['part'] in HeaderPart: ########or src_point['score'] < confidence_threshold:
+        if src_point['part'] in HeaderPart or src_point['score'] < confidence_threshold:
             continue
         for dst_point in keypoints[i:]:
-            if dst_point['part'] in HeaderPart: #or dst_point['score'] < confidence_threshold:
+            if dst_point['part'] in HeaderPart or dst_point['score'] < confidence_threshold:
                 continue
             name = src_point['part'] + dst_point['part']
             def check_and_drawline(name):
+                global src_z
+                global dst_z
                 if name not in valid_name and name in ConnectedKeyPointsNames:
                     x=[int(src_point['position']['x']),int(dst_point['position']['x'])]
                     y=[int(src_point['position']['y']),int(dst_point['position']['y'])]
+                    print(name,": ")
+                    # length=math.sqrt((src_point['position']['x']-dst_point['position']['x'])**2+(src_point['position']['y']-dst_point['position']['y'])**2)
+                    # print(length)
+                    # dst_z=src_z+math.sqrt(abs(ConnectedKeyPointsNames[name]**2-(src_point['position']['x']-dst_point['position']['x'])**2-(src_point['position']['y']-dst_point['position']['y'])))
+                    # z=[src_z,dst_z]
+                    # src_z=dst_z
+                    
                     temp = np.array([[589.3667059623796,0.0,320.0],[0.0,589.3667059623796,240.0],[0.0,0.0,1.0]]) 
                     temp2= np.linalg.inv(temp)
                     threed=[]
                     for i in range(len(x)):
-                        z=np.array([x[i],y[i],5])
-                        threed.append(np.dot(temp2,z))
+                        temp3=np.array([x[i],y[i],5])
+                        threed.append(np.dot(temp2,temp3))
                     xline=[]
                     yline=[]
                     zline=[]
@@ -235,18 +264,14 @@ def drawmatplotlib(body):
                         yline.append(threed[i][1])
                         zline.append(threed[i][2])
                     print("x:",xline)
-                    print("y:",yline)
+                    print("y:",yline) 
                     print("z:",zline)
-                    ax.plot3D(yline, xline, zline, 'gray')
+                    ax.plot3D(yline, xline,zline)
                     ax.scatter(yline, xline, zline)
-                    valid_name.add(name)
             name = src_point['part'] + dst_point['part']
             check_and_drawline(name)
             name = dst_point['part'] + src_point['part']
             check_and_drawline(name)
-    plt.show()
-    plt.pause(0.01)
-    plt.close('all')
     return None
 
 color_table = [(0,255,0), (255,0,0), (0,0,255), (255, 255, 0), (0, 255, 255), (255, 0, 255)]
@@ -283,6 +308,7 @@ fontColor = (41, 67, 240)
 lineType = 2
 
 
+fig = plt.figure()
 while True:
     ret, frame = cap.read()
     if not ret:
@@ -306,7 +332,9 @@ while True:
     
     for i in range(len(poses)):
         
-        drawmatplotlib(poses[i])
+        
+        
+        
                     
 
         if poses[i]['score'] > 0.1:
@@ -319,6 +347,11 @@ while True:
                 cv2.putText(frame,text,nearCenter,font,fontScale,fontColor,lineType)
                 if counter >=8 :
                     counter = 0
+    
+    drawmatplotlib(poses[0],fig)
+    plt.draw()
+    plt.pause(1e-100)
+    
     cv2.imshow("test", frame)
     k = cv2.waitKey(1)
     if k%256 == 27:
@@ -327,5 +360,4 @@ while True:
         cv2.destroyAllWindows()
         print("Escape hit, closing...")
         break
-
 
